@@ -1,0 +1,15 @@
+{
+  "columns": {
+    "Transaction Date": "date",
+    "Description": "description",
+    "Amount": "amount",
+    "Type": "type",
+    "Category": "category",
+    "Memo": "notes"
+  },
+  "formatting": {
+    "date": {
+      "format": "%m/%d/%Y"
+    }
+  }
+}

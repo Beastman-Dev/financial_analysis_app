@@ -6,7 +6,7 @@ def categorize_transactions(df, rules, rules_path=RULES_FILE):
 
     # Apply existing rules
     for category, keywords in rules.items():
-        mask = df["Description"].str.lower().str.contains('|'.join(keywords), na=False)
+        mask = df["description"].str.lower().str.contains('|'.join(keywords), na=False)
         df.loc[mask, "Category"] = category
 
     # Identify uncategorized transactions
@@ -23,17 +23,17 @@ def categorize_transactions(df, rules, rules_path=RULES_FILE):
     if use_batch:
         print("\nUncategorized Transactions:")
         for i, (_, row) in enumerate(uncategorized.iterrows()):
-            print(f"[{i}] \"{row['Description']}\"")
+            print(f"[{i}] \"{row['description']}\"")
 
         for i, (idx, row) in enumerate(uncategorized.iterrows()):
-            prompt = f"Enter category for [{i}] ({row['Description']}): "
+            prompt = f"Enter category for [{i}] ({row['description']}): "
             user_input = input(prompt).strip()
             if user_input:
                 df.at[idx, "Category"] = user_input
-                new_rules.append({"Category": user_input, "Keyword": row["Description"].lower(), "Ignore": 0})
+                new_rules.append({"Category": user_input, "Keyword": row["description"].lower(), "Ignore": 0})
     else:
         for idx, row in uncategorized.iterrows():
-            desc = row["Description"]
+            desc = row["description"]
             print(f"\nUncategorized transaction: {desc}")
             user_input = input("Enter a category for this transaction (or press Enter to skip): ").strip()
             if user_input:

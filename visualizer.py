@@ -1,9 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-from config import BASE_DIR
+from config import WORKING_DIR
 
-CHART_DIR = os.path.join(BASE_DIR, "charts")
+CHART_DIR = os.path.join(WORKING_DIR, "charts")
 os.makedirs(CHART_DIR, exist_ok=True)
 
 def plot_summary_by_category(summary_df):

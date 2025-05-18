@@ -32,4 +32,5 @@ Thumbs.db
 
 # Data files
 financial_analysis/cleaned_transactions.csv
+source_data/
 *.csv

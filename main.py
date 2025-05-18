@@ -1,45 +1,67 @@
-import sys
 import os
-sys.path.insert(0, 'financial_analysis')
-from check_requirements import check_packages
-check_packages()
-
-from config import DATA_FOLDER, OUTPUT_FILE, IGNORED_CATEGORIES, CATEGORIZATION_RULES
-from reader import load_csv
-from normalizer import normalize
-from cleaner import clean_transactions
-from analyzer import summarize_by_category, monthly_spending
-from categorizer import categorize_transactions
-from visualizer import plot_summary_by_category, plot_monthly_spending
-
+import json
 import pandas as pd
+from config import WORKING_DIR
+from normalizer import normalize_dataframe, load_mapping
+from categorizer import categorize_transactions
+from analyzer import monthly_spending
+from visualizer import plot_monthly_spending, plot_summary_by_category
+
+# Define paths
+SOURCE_DATA_DIR = os.path.join(WORKING_DIR, "source_data")
+NORMALIZED_DATA_DIR = os.path.join(WORKING_DIR, "normalized")
+INSTITUTION_MAP_PATH = os.path.join(WORKING_DIR, "data", "institution_names.json")
+os.makedirs(NORMALIZED_DATA_DIR, exist_ok=True)
+
+def detect_source_name(file_name):
+    for name in ["CHCC", "GFCU", "PP"]:
+        if name in file_name.upper():
+            return name
+    return None
 
 def main():
     all_data = []
 
-    csv_files = [f for f in os.listdir(DATA_FOLDER) if f.endswith(".csv")]
+    with open(INSTITUTION_MAP_PATH, "r") as f:
+        institution_map = json.load(f)
 
-    for filename in csv_files:
-        file_path = os.path.join(DATA_FOLDER, filename)
-        raw_df = load_csv(file_path)
-        norm_df = normalize(raw_df, filename)
-        clean_df = clean_transactions(norm_df, IGNORED_CATEGORIES)
-        all_data.append(clean_df)
+    for file in os.listdir(SOURCE_DATA_DIR):
+        if file.lower().endswith(".csv"):
+            file_path = os.path.join(SOURCE_DATA_DIR, file)
+            source = detect_source_name(file)
+            if not source:
+                print(f"Skipping {file}: unable to detect source.")
+                continue
+            try:
+                df = pd.read_csv(file_path, encoding="utf-8")
+                df.columns = df.columns.str.strip()
+                mapping = load_mapping(source)
+                df_normalized = normalize_dataframe(df, mapping)
+                df_normalized["institution"] = institution_map.get(source, source)
 
-    merged = pd.concat(all_data, ignore_index=True)
-    merged = categorize_transactions(merged, CATEGORIZATION_RULES)
+                out_path = os.path.join(NORMALIZED_DATA_DIR, f"normalized_{source}.csv")
+                df_normalized.to_csv(out_path, index=False)
+                print(f"Normalized: {file} -> {out_path}")
 
-    summary = summarize_by_category(merged)
-    print("\n--- Summary by Category ---")
-    print(summary)
-    plot_summary_by_category(summary)
+                all_data.append(df_normalized)
+            except Exception as e:
+                print(f"Error processing {file}: {e}")
+                try:
+                    print("Available columns:", pd.read_csv(file_path, encoding="utf-8").columns.tolist())
+                except Exception as inner_e:
+                    print("Could not read columns due to:", inner_e)
 
-    monthly = monthly_spending(merged)
-    print("\n--- Monthly Spending ---")
-    print(monthly)
-    plot_monthly_spending(monthly)
+    if all_data:
+        merged_df = pd.concat(all_data, ignore_index=True)
+        categorized_df = categorize_transactions(merged_df, {})
 
-    merged.to_csv(OUTPUT_FILE, index=False)
+        monthly_df = monthly_spending(categorized_df)
+        plot_monthly_spending(monthly_df)
+        plot_spending_by_category(categorized_df)
+
+        final_output_path = os.path.join(WORKING_DIR, "final_categorized_transactions.csv")
+        categorized_df.to_csv(final_output_path, index=False)
+        print(f"Final categorized data saved to {final_output_path}")
 
 if __name__ == "__main__":
     main()

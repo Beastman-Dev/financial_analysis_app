@@ -1,0 +1,14 @@
+{
+  "columns": {
+    "Name": "description",
+    "Amount": "amount",
+    "Type": "type",
+    "Status": "notes"
+  },
+  "combine": {
+    "date": ["Date", "Time"]
+  },
+  "formatting": {
+    "date": { "format": "%m/%d/%Y %H:%M:%S" }
+  }
+}
