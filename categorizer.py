@@ -1,6 +1,7 @@
 import pandas as pd
+from config import RULES_FILE
 
-def categorize_transactions(df, rules, rules_path="financial_analysis/data/category_rules.csv"):
+def categorize_transactions(df, rules, rules_path=RULES_FILE):
     df["Category"] = "Uncategorized"
 
     # Apply existing rules
@@ -22,7 +23,7 @@ def categorize_transactions(df, rules, rules_path="financial_analysis/data/categ
     if use_batch:
         print("\nUncategorized Transactions:")
         for i, (_, row) in enumerate(uncategorized.iterrows()):
-            print(f"[{i}] "{row['Description']}"")
+            print(f"[{i}] \"{row['Description']}\"")
 
         for i, (idx, row) in enumerate(uncategorized.iterrows()):
             prompt = f"Enter category for [{i}] ({row['Description']}): "

@@ -1,10 +1,15 @@
 import pandas as pd
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DATA_FOLDER = os.path.join(BASE_DIR, "sample_data")
+RULES_FILE = os.path.join(BASE_DIR, "data", "category_rules.csv")
+OUTPUT_FILE = os.path.join(BASE_DIR, "cleaned_transactions.csv")
 
 STANDARD_COLUMNS = ["Date", "Description", "Amount", "Category", "Institution"]
 
-DATA_FOLDER = "sample_data"
-
-def load_rules(csv_path="financial_analysis/data/category_rules.csv"):
+def load_rules(csv_path=RULES_FILE):
     df = pd.read_csv(csv_path)
     categorized = df[df["Ignore"] == 0]
     ignored = df[df["Ignore"] == 1]["Keyword"].dropna().tolist()

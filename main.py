@@ -4,7 +4,7 @@ sys.path.insert(0, 'financial_analysis')
 from check_requirements import check_packages
 check_packages()
 
-from config import DATA_FOLDER, IGNORED_CATEGORIES, CATEGORIZATION_RULES
+from config import DATA_FOLDER, OUTPUT_FILE, IGNORED_CATEGORIES, CATEGORIZATION_RULES
 from reader import load_csv
 from normalizer import normalize
 from cleaner import clean_transactions
@@ -17,12 +17,10 @@ import pandas as pd
 def main():
     all_data = []
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(script_dir, DATA_FOLDER)
-    csv_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
+    csv_files = [f for f in os.listdir(DATA_FOLDER) if f.endswith(".csv")]
 
     for filename in csv_files:
-        file_path = os.path.join(data_dir, filename)
+        file_path = os.path.join(DATA_FOLDER, filename)
         raw_df = load_csv(file_path)
         norm_df = normalize(raw_df, filename)
         clean_df = clean_transactions(norm_df, IGNORED_CATEGORIES)
@@ -41,7 +39,7 @@ def main():
     print(monthly)
     plot_monthly_spending(monthly)
 
-    merged.to_csv(os.path.join(script_dir, "financial_analysis/cleaned_transactions.csv"), index=False)
+    merged.to_csv(OUTPUT_FILE, index=False)
 
 if __name__ == "__main__":
     main()
