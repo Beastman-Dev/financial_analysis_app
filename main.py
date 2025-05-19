@@ -55,9 +55,11 @@ def main():
         merged_df = pd.concat(all_data, ignore_index=True)
         categorized_df = categorize_transactions(merged_df, {})
 
+        print("→ Columns in categorized_df:", categorized_df.columns.tolist()) # For debugging
+
         monthly_df = monthly_spending(categorized_df)
         plot_monthly_spending(monthly_df)
-        plot_spending_by_category(categorized_df)
+        plot_summary_by_category(categorized_df)
 
         final_output_path = os.path.join(WORKING_DIR, "final_categorized_transactions.csv")
         categorized_df.to_csv(final_output_path, index=False)
